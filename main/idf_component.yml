@@ -1,0 +1,9 @@
+dependencies:
+  idf:
+    version: ">=4.0.0"
+  rc522:
+    git: "https://github.com/abobija/esp-idf-rc522.git"
+    version: "*"
+  led_strip: "*"
+  
+

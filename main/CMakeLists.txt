@@ -1,0 +1,24 @@
+idf_component_register(
+    SRCS 
+        "main.c"
+        "config.c"
+        "wifi_manager.c"
+        "webserver.c"
+        "mqtt_topics.c"
+        "mqtt_manager.c"
+        "rfid_manager.c"
+        "led_manager.c"
+        "dns_server.c"
+        "captive_portal.c"
+    INCLUDE_DIRS "." "include"
+    REQUIRES 
+        nvs_flash
+        driver
+        esp_wifi
+        esp_http_server
+        mqtt
+        rc522
+        led_strip
+        DFPlayerMiniFast  
+        VL53L1
+)

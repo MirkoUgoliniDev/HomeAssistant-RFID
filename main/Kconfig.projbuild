@@ -1,0 +1,341 @@
+menu "RFPAD_MAIN"
+
+    config CONFIG_PIN_MODE             
+        int "CONFIG_PIN_MODE"
+        default 2
+        help
+            Define Pin for Enter in AP Mode.
+
+    config ALARM_DEBOUNCE_TIME_US             
+        int "ALARM_DEBOUNCE_TIME_US"
+        default 2000000
+        help
+             Define debounce time in us.
+
+endmenu
+
+
+
+
+menu "RFPAD_RC522"
+    config RC522_PRESENT
+        bool "RC522 Present"
+        default y
+        help
+            Define if RC522 is Present.
+
+    config RC522_PREVENT_SECTOR_TRAILER_WRITE
+        bool "Prevent writing to the Sector Trailer block"
+        default y
+        depends on RC522_PRESENT
+        help
+            The Sector Trailer block stores authentication keys
+            and access bits. Enabling this option prevents writing
+            to the Trailer block. This is enabled by default to protect
+            inexperienced users from accidentally overwriting keys or
+            writing incorrect access bits, which could render the sector
+            unusable.
+
+    config RC522_DEBUG_MODE             
+        bool "RC522 Debug Mode"
+        default n
+        depends on RC522_PRESENT
+        help
+            Setting RC522 debug mode.
+
+    config RC522_SPI_BUS_GPIO_MISO
+        int "MISO"
+        default 37
+        depends on RC522_PRESENT
+        help
+            Define MISO Pin.
+
+    config RC522_SPI_BUS_GPIO_MOSI
+        int "MOSI"
+        default 35
+        depends on RC522_PRESENT
+        help
+            Define MOSI Pin.
+
+    config RC522_SPI_BUS_GPIO_SCLK
+        int "SCLK"
+        default 36
+        depends on RC522_PRESENT
+        help
+            Define SCLK Pin.
+
+    config RC522_SPI_BUS_GPIO_SDA
+        int "SDA"
+        default 34
+        depends on RC522_PRESENT
+        help
+            Define SDA Pin.
+
+    config RC522_SPI_BUS_GPIO_RST 
+        int "RST"
+        default 0
+        depends on RC522_PRESENT
+        help
+            Define RST Pin.
+endmenu
+
+
+
+menu "RFPAD_VL53L1"
+    config VL53L1_PRESENT    
+        bool "VL53L1 Present"
+        default y
+        help
+            Define if VL53L1 is Present.
+
+    config VL53L1_DEBUG_MODE    
+        bool "VL53L1 Debug Mode"
+        default n
+        depends on VL53L1_PRESENT
+        help
+            Setting VL53L1 debug mode.
+    
+    config VL53L1_I2C_ADDRESS
+        int "VL53L1_I2C_ADDRESS"
+        default 41
+        depends on VL53L1_PRESENT
+        help
+            Define I2C Device Address.
+
+    config VL53L1_I2C_DEFAULT_PORT
+        int "VL53L1_I2C_DEFAULT_PORT"
+        default 0
+        depends on VL53L1_PRESENT
+        help
+            Define VL53L1_I2C_DEFAULT_PORT.
+
+    config VL53L1_I2C_DEFAULT_SDA
+        int "VL53L1_I2C_DEFAULT_SDA"
+        default 8
+        depends on VL53L1_PRESENT
+        help
+            Define SDA Pin.
+
+    config VL53L1_I2C_DEFAULT_SCL
+        int "VL53L1_I2C_DEFAULT_SCL"
+        default 9
+        depends on VL53L1_PRESENT
+        help
+            Define SLC Pin.
+
+    config VL53L1_I2C_DEFAULT_INT
+        int "VL53L1_I2C_DEFAULT_INT"
+        default 1
+        depends on VL53L1_PRESENT
+        help
+            Define INT Pin.
+
+    config VL53L1_XSHUT_PIN
+        int "VL53L1_XSHUT_PIN"
+        default 3
+        depends on VL53L1_PRESENT
+        help
+            Define VL53L1 XSHUT PIN.
+
+    config VL53L1_I2C_DEFAULT_FREQ
+        int "VL53L1_I2C_DEFAULT_FREQ"
+        default 400000
+        depends on VL53L1_PRESENT
+        help
+            Define Clock Frequency.
+
+    config VL53L1_MEASUREMENT_CYCLE_MS
+        int "VL53L1_MEASUREMENT_CYCLE_MS"
+        default 10
+        depends on VL53L1_PRESENT
+        help
+            Define Mesurement Cycle in s.
+
+    config VL53L1_DEBOUNCE_TIME_MS
+        int "VL53L1_DEBOUNCE_TIME_MS"
+        default 1000
+        depends on VL53L1_PRESENT
+        help
+            Define debounce time ms.
+
+    
+endmenu
+
+
+
+
+menu "RFPAD_DFPlayerMini"
+    config DFPLAYER_MINI_PRESENT   
+        bool "DFPlayerMini Present"
+        default n
+        help
+            Define if DFPlayerMini is Present.
+
+    config DFPLAYER_MINI_DEBUG_MODE       
+        bool "DFPlayerMini Debug Mode"
+        default n
+        depends on DFPLAYER_MINI_PRESENT
+        help
+            Setting DFPlayerMini debug mode.
+    
+    config DFPLAYER_UART_PORT             
+        int "DFPLAYER_UART_PORT"
+        default 1
+        depends on DFPLAYER_MINI_PRESENT
+        help
+            Define UART NUM.  
+
+    config DFPLAYER_UART_TXD              
+        int "DFPLAYER_UART_TXD"
+        default 17
+        depends on DFPLAYER_MINI_PRESENT
+        help
+            Define UART TXD Pin.
+
+    config DFPLAYER_UART_RXD              
+        int "DFPLAYER_UART_RXD"
+        default 18
+        depends on DFPLAYER_MINI_PRESENT
+        help
+            Define UART RXD Pin.
+
+    config DFPLAYER_UART_BAUD              
+        int "DFPLAYER_UART_BAUD"
+        default 9600
+        depends on DFPLAYER_MINI_PRESENT
+        help
+        Define UART BAUD RATE.
+
+    config DFPLAYER_UART_BUF_SIZE              
+        int "DFPLAYER_UART_BUF_SIZE"
+        default 128
+        depends on DFPLAYER_MINI_PRESENT
+            help
+            Define UART BUFFER SIZE.
+
+endmenu
+
+
+
+menu "RFPAD_LED_RGB_WS2812"
+    config LED_RGB_WS2812_PRESENT   
+        bool "LED_RGB_WS2812 Present"
+        default n
+        help
+            Define if LED_RGB_WS2812 is Present.
+
+    config LED_RGB_WS2812_DEBUG_MODE
+        bool "LED_RGB_WS2812 Debug Mode"
+        default n
+        depends on LED_RGB_WS2812_PRESENT
+        help
+            Setting LED_RGB_WS2812 debug mode.
+endmenu
+
+
+
+menu "RFPAD_WIFI-AP"
+    config AP_SSID    
+        string "AP_SSID"
+        default "ESP32_RFID_PAD"
+        help
+            Define AP Name.
+
+    config AP_PASS    
+        string "AP_PASS"
+        default "12345678"
+        help
+            Define AP Password.
+
+    config AP_CHANNEL    
+        int "AP_CHANNEL"
+        default 1
+        help
+            Define AP Channel.
+
+    config MAX_STA_CONN    
+        int "MAX_STA_CONN"
+        default 4
+        help
+            Define Max Conn number.
+endmenu
+
+
+
+
+menu "RFPAD_WIFI-STATION"
+    config DEFAULT_WIFI_SSID    
+        string "DEFAULT_WIFI_SSID"
+        default "FRITZBOX_2.4GHz"
+        help
+            Define SSID Router Name.
+
+    config DEFAULT_WIFI_PASSWORD    
+        string "DEFAULT_WIFI_PASSWORD"
+        default "Arduino_Galileo1"
+        help
+            Define SSID Router Password.
+endmenu
+
+
+
+menu "RFPAD_MQTT"
+
+    config DEFAULT_MQTT_BROKER    
+        string "DEFAULT_MQTT_BROKER"
+        default "mqtt://192.168.1.116:1883"
+        help
+            Define MQTT Broker URL.
+
+    config DEFAULT_MQTT_USERNAME    
+        string "DEFAULT_MQTT_USERNAME"
+        default "mqtt_user"
+        help
+            Define MQTT Broker Username.
+
+    config DEFAULT_MQTT_PASSWORD    
+        string "DEFAULT_MQTT_PASSWORD"
+        default "mqtt_password"
+        help
+            Define MQTT Broker Password.
+
+    config DEFAULT_DEVICE_ID    
+        string "DEFAULT_DEVICE_ID"
+        default "garage_samy"
+        help
+            Define Device Id.  
+            
+    config DEFAULT_MQTT_RFID_TOPIC_UID     
+        string "DEFAULT_MQTT_RFID_TOPIC_UID"
+        default "home/rfid/{device_id}/uid"
+        help
+            Define RFID TOPIC UID.  
+         
+    config DEFAULT_MQTT_ALARM_TOPIC_STATUS     
+        string "DEFAULT_MQTT_ALARM_TOPIC_STATUS"
+        default "home/alarm/{device_id}/status"
+        help
+            Define ALLARM TOPIC STATUS.     
+
+    config DEFAULT_MQTT_ALARM_TOPIC_SET     
+        string "DEFAULT_MQTT_ALARM_TOPIC_SET"
+        default "home/alarm/{device_id}/set"
+        help
+            Define ALLARM TOPIC SET.     
+
+    config DEFAULT_MQTT_ALARM_TOPIC_GET     
+        string "DEFAULT_MQTT_ALARM_TOPIC_GET"
+        default "home/alarm/{device_id}/get"
+        help
+            Define ALLARM TOPIC GET.
+
+    config MQTT_ENABLE_AVAILABILITY
+        bool "Enable MQTT Availability Reporting"
+        default y
+        help
+            If enabled, the device will report its availability status to Home Assistant.
+            This allows HA to show the device as unavailable when offline.
+
+
+
+endmenu
