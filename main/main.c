@@ -24,7 +24,7 @@ static const char *TAG = "main";
 
 static bool first_boot = true;
 static int64_t last_alarm_notification_time = 0;
-
+bool status_reported =0;
 
 // STATO ALLARME
 bool armed = false;
@@ -449,23 +449,19 @@ void initialize_dfplayer() {
 
 
 
-
+/*
 static void IRAM_ATTR vl53_isr_handler(void* arg) {
-     // Non usare ESP_LOGI in un ISR, ma salva informazioni 
-    // che possono essere utilizzate dopo
     static uint32_t interrupt_count = 0;
     interrupt_count++;
-    
-    // Salva i dati da passare al task (incluso il conteggio)
     uint32_t event_data = interrupt_count;
     xQueueSendFromISR(vl53_queue, &event_data, NULL);
 }
+*/
 
 
 
 
-
-
+/*
 static void vl53_service(void* arg) {
     uint32_t event_data = 0;
     VL53L1X_ERROR get_status;
@@ -546,37 +542,19 @@ static void vl53_service(void* arg) {
 
     }
 }
+*/
 
 
 
 
-
-
-
+/*
 void setup_gpio_VL531_interrupt(gpio_num_t gpio_pin, gpio_isr_t isr_handler) {
-    // Crea una coda per gestire gli eventi GPIO dall'ISR
-    vl53_queue = xQueueCreate(10, sizeof(uint32_t));
-
-    // Avvia il task GPIO
+   
+    vl53_queue = xQueueCreate(10, sizeof(uint32_t)); 
     xTaskCreate(vl53_service, "vl53_service", 8192, NULL, 10, NULL);
-
-    // Installa il servizio ISR GPIO
     gpio_install_isr_service(ESP_INTR_FLAG_LOWMED);
-
-    // Collega l'handler ISR al pin GPIO specifico
     gpio_isr_handler_add(gpio_pin, isr_handler, (void*)&just_a_number);
-
-    // Configura GPIO per interrompere su QUALSIASI cambiamento di livello
     gpio_config_t io_conf;
-
-    /**
-    GPIO_INTR_POSEDGE = Rising Edge interrupt = on the previous clock cycle, the pin was low and on this clock cycle it's high.
-    GPIO_INTR_NEGEDGE = Falling Edge interrupt = on the previous clock cycle, the pin was high and on this clock cycle it's low.
-    GPIO_INTR_ANYEDGE = Any Edge interrupt = on the previous clock cycle the pin was different to what it is on this clock cycle.  
-    GPIO_INTR_LOW_LEVEL = Low level interrupt = on this clock cycle the pin is low.
-    GPIO_INTR_HIGH_LEVEL = High level interrupt = on this clock cycle the pin is high.
-    */
-
     io_conf.intr_type = GPIO_INTR_POSEDGE;  // Cambiato per rilevare entrambe le transizioni
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pin_bit_mask = (1ULL << gpio_pin);
@@ -584,10 +562,11 @@ void setup_gpio_VL531_interrupt(gpio_num_t gpio_pin, gpio_isr_t isr_handler) {
     io_conf.pull_up_en = 1;
     gpio_config(&io_conf);
 }
+*/
 
 
 
-
+/*
 void reset_vl53l1x() {
     gpio_set_direction(CONFIG_VL53L1_XSHUT_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(CONFIG_VL53L1_XSHUT_PIN, 0);  // Metti il sensore in reset
@@ -595,12 +574,14 @@ void reset_vl53l1x() {
     gpio_set_level(CONFIG_VL53L1_XSHUT_PIN, 1);  // Riporta HIGH per attivarlo
     vTaskDelay(pdMS_TO_TICKS(10));         // Attendi stabilizzazione
 }
+*/
 
 
 
 
-
+/*
 void inizializeVL531() {
+
     int boot_timeout = 0;
     uint8_t sensorState = 0;
     //VL53L1X_ERROR status = 0;
@@ -686,7 +667,7 @@ void inizializeVL531() {
 
     
 }
-
+*/
 
 
 
@@ -737,12 +718,10 @@ void app_main(void) {
      initialize_dfplayer();
 
 
-
     // Prima di chiamare webserver_start:
     webserver_set_uri_registered_callback(on_uri_registered);
 
 
-    
     // Inizializza NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -773,7 +752,6 @@ void app_main(void) {
 
 
 
-
     // Controlla se entrare in modalità configurazione
     if (gpio_get_level(CONFIG_CONFIG_PIN_MODE) == 0 || !config_is_valid()) {
 
@@ -800,7 +778,7 @@ void app_main(void) {
 
 
         // Inizilizzo sensore TOF
-        inizializeVL531();
+        //inizializeVL531();
 
 
         // Inizializza tutti i moduli
