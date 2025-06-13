@@ -3,7 +3,7 @@
 #include "nvs.h"
 #include "esp_log.h"
 #include <string.h>
-#include "mqtt_topics.h"
+//#include "mqtt_topics.h"
 
 
 static const char *TAG = "config";
@@ -219,3 +219,4 @@ esp_err_t config_load(app_config_t *config) {
 
     return ESP_OK;
 }
+

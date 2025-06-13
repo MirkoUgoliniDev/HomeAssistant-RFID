@@ -1,8 +1,9 @@
-# For more information about build system see
-# https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html
-# The following five lines of boilerplate have to be in your project's
-# CMakeLists in this exact order for cmake to work correctly
+# CMakeLists.txt per progetto ESP-IDF
+# Versione minima di CMake richiesta
 cmake_minimum_required(VERSION 3.16)
 
+# Includi il sistema di build di ESP-IDF
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(basic)
+
+# Nome del progetto
+project(HomeAssistant-RFID)

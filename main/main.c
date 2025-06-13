@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <esp_log.h>
 #include <inttypes.h>
 #include <nvs_flash.h>
@@ -23,11 +24,21 @@
 static const char *TAG = "main";
 
 static bool first_boot = true;
-static int64_t last_alarm_notification_time = 0;
+
+
+static app_state_t app_state = APP_STATE_INIT;
+static bool should_restart = false;
+
 
 
 // STATO ALLARME
 bool armed = false;
+static int64_t last_alarm_notification_time = 0;
+
+
+
+// MODIFICA PER FIX audio
+bool status_reported = false;
 
 
 // VL53L1
@@ -47,40 +58,16 @@ void dfplayer_task(void *pvParameter);
 static dfplayer_handle_t player = NULL;  
 void initialize_dfplayer();
 
-typedef struct {
-    int track_number; // Numero della traccia da riprodurre
-} dfplayer_command_t;
-
 static QueueHandle_t dfplayer_queue = NULL;
 // DFPLAYER 
 
 
-
-
 // LED_RGB_WS2812
-typedef struct {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-} led_command_t;
-
 static led_command_t last_led_state ;
-
 static QueueHandle_t led_queue = NULL;
 // LED_RGB_WS2812
 
 
-
-// Stato dell'applicazione
-typedef enum {
-    APP_STATE_INIT,
-    APP_STATE_CONFIG_MODE,
-    APP_STATE_NORMAL_MODE,
-    APP_STATE_ERROR
-} app_state_t;
-
-static app_state_t app_state = APP_STATE_INIT;
-static bool should_restart = false;
 
 
 
@@ -97,15 +84,12 @@ static void wifi_state_callback(wifi_manager_state_t state) {
         case WIFI_STATE_STA_CONNECTED:
             ESP_LOGI(TAG, "WiFi connected, starting MQTT");
 
-
              // Riproduce traccia 3 solo al boot
              if (first_boot && dfplayer_queue != NULL) {
-                dfplayer_command_t cmd = {.track_number = 3};
+                dfplayer_command_t cmd = {.track_number = TRACK_WIFI_CONNECTED};
                 xQueueSend(dfplayer_queue, &cmd, portMAX_DELAY);
                 ESP_LOGI(TAG, "Play Traccia 3");
             }
-
-
 
              // Attendi che la rete si stabilizzi
              vTaskDelay(pdMS_TO_TICKS(4000)); // Attendi 3 secondi
@@ -119,6 +103,7 @@ static void wifi_state_callback(wifi_manager_state_t state) {
             break;
     }
 }
+
 
 
 
@@ -202,25 +187,24 @@ static void mqtt_message_callback(const char* topic, const char* data, int data_
             // È trascorso abbastanza tempo, aggiorna il timestamp e riproduci
             last_alarm_notification_time = current_time;
 
-            if (strncmp(message, "ARMED", 5) == 0) {
-                cmd.track_number = 2;
-                BaseType_t result = xQueueSend(dfplayer_queue, &cmd, pdMS_TO_TICKS(1000));
-                if (result == pdTRUE) {
-                    ESP_LOGI(TAG, "MQTT: Comando inviato correttamente alla coda");
-                } else {
-                    ESP_LOGE(TAG, "MQTT: Errore nell'invio del comando alla coda");
+           if (! status_reported ){
+                bool should_report = false;
+                if (strncmp(message, "ARMED", 5) == 0) {
+                    cmd.track_number = TRACK_ARMED;
+                    if (xQueueSend(dfplayer_queue, &cmd, pdMS_TO_TICKS(1000)) == pdTRUE) {
+                        should_report = true; // Segna che il comando è stato inviato
+                    }
+                } else if (strncmp(message, "DISARMED", 8) == 0) {
+                    cmd.track_number = TRACK_DISARMED;  
+                    if (xQueueSend(dfplayer_queue, &cmd, pdMS_TO_TICKS(1000)) == pdTRUE) {
+                        should_report = true; // Segna che il comando è stato inviato
+                    }
                 }
 
-            } else if (strncmp(message, "DISARMED", 8) == 0) {
-                cmd.track_number = 1;   
-                BaseType_t result = xQueueSend(dfplayer_queue, &cmd, pdMS_TO_TICKS(1000));
-                if (result == pdTRUE) {
-                    ESP_LOGI(TAG, "MQTT: Comando inviato correttamente alla coda");
-                } else {
-                    ESP_LOGE(TAG, "MQTT: Errore nell'invio del comando alla coda");
+                if (should_report) {
+                    status_reported = true; // <-- IMPOSTA IL FLAG QUI
                 }
-            }
-
+           }    
 
        } else {
 
@@ -273,7 +257,7 @@ static void mqtt_state_callback(mqtt_manager_state_t state) {
 
             // Riproduce traccia 4 solo al boot
             if (first_boot && dfplayer_queue != NULL) {
-                dfplayer_command_t cmd = {.track_number = 4};
+                dfplayer_command_t cmd = {.track_number = TRACK_MQTT_CONNECTED };
                 xQueueSend(dfplayer_queue, &cmd, portMAX_DELAY);
                 ESP_LOGI(TAG, "Play Traccia 4");
             }
@@ -332,10 +316,13 @@ static void rfid_card_callback(const rfid_uid_t *uid) {
      }
  
 
+
     // Pubblica l'UID su MQTT se siamo connessi
     if (mqtt_manager_is_connected()) {     
         send_rfid_uid(uid_str);
+        status_reported = false;
     }
+
 
 }
 
@@ -371,7 +358,8 @@ void dfplayer_task(void *pvParameter) {
         if (xQueueReceive(dfplayer_queue, &cmd, pdMS_TO_TICKS(30000)) == pdTRUE) {
             //ESP_LOGI(TAG, "DFPlayer: Comando ricevuto dalla coda - traccia %d", cmd.track_number);     
             // Riproduce la traccia specificata
-            ESP_ERROR_CHECK(dfplayer_play(player, cmd.track_number));   
+            ESP_ERROR_CHECK(dfplayer_play(player, cmd.track_number)); 
+
             // Attendi un momento per permettere al DFPlayer di processare il comando
             vTaskDelay(pdMS_TO_TICKS(500));      
             ESP_LOGI(TAG, "DFPlayer: Comando completato");
@@ -451,13 +439,10 @@ void initialize_dfplayer() {
 
 
 static void IRAM_ATTR vl53_isr_handler(void* arg) {
-     // Non usare ESP_LOGI in un ISR, ma salva informazioni 
-    // che possono essere utilizzate dopo
     static uint32_t interrupt_count = 0;
-    interrupt_count++;
-    
-    // Salva i dati da passare al task (incluso il conteggio)
+    interrupt_count++;  
     uint32_t event_data = interrupt_count;
+    status_reported = false;
     xQueueSendFromISR(vl53_queue, &event_data, NULL);
 }
 
@@ -473,7 +458,7 @@ static void vl53_service(void* arg) {
     uint8_t RangeStatus = VL53L1_RANGESTATUS_NONE;
     uint16_t Distance = -1;
     bool error;
-    int interrupt_count = 0;
+    //int interrupt_count = 0;
     bool object_detected = false;
     uint32_t last_notification_time = 0;
     //uint32_t last_log_time = 0;  // Per limitare anche i log degli interrupt
@@ -484,7 +469,7 @@ static void vl53_service(void* arg) {
 
         if (xQueueReceive(vl53_queue, &event_data, pdMS_TO_TICKS(5000))) {
 
-            interrupt_count++;
+            //interrupt_count++;
 
             uint32_t current_time = esp_timer_get_time() / 1000;  // Converti in millisecondi
             
@@ -521,11 +506,11 @@ static void vl53_service(void* arg) {
                     last_notification_time = current_time;
 
                     if (armed){
-                        dfplayer_command_t cmd = {.track_number = 6};
+                        dfplayer_command_t cmd = {.track_number = TRACK_ALARM_TRIGGERED};
                         xQueueSend(dfplayer_queue, &cmd, portMAX_DELAY);
                         ESP_LOGI(TAG, "Play  traccia 6");
                     } else{
-                        dfplayer_command_t cmd = {.track_number = 7};
+                        dfplayer_command_t cmd = {.track_number = TRACK_PRESENCE_DETECTED };
                         xQueueSend(dfplayer_queue, &cmd, portMAX_DELAY);
                         ESP_LOGI(TAG, "Play  traccia 7");
                     }
@@ -697,7 +682,7 @@ void on_uri_registered(const char *uri, httpd_method_t method) {
     switch (method) {
         case HTTP_GET: method_str = "GET"; 
 
-        dfplayer_command_t cmd = {.track_number = 5};
+        dfplayer_command_t cmd = {.track_number = TRACK_CONFIG_ACCESS };
         xQueueSend(dfplayer_queue, &cmd, portMAX_DELAY);
         ESP_LOGI(TAG, "Play Traccia 5");
 

@@ -49,4 +49,34 @@ esp_err_t config_init(void);
 void config_received_callback(const app_config_t *new_config);
 
 
+
+typedef enum {
+    TRACK_DISARMED = 1,
+    TRACK_ARMED = 2,
+    TRACK_WIFI_CONNECTED = 3,
+    TRACK_MQTT_CONNECTED = 4,
+    TRACK_CONFIG_ACCESS = 5,
+    TRACK_ALARM_TRIGGERED = 6,
+    TRACK_PRESENCE_DETECTED = 7
+} audio_track_t;
+
+
+
+// Stato dell'applicazione
+typedef enum {
+    APP_STATE_INIT,
+    APP_STATE_CONFIG_MODE,
+    APP_STATE_NORMAL_MODE,
+    APP_STATE_ERROR
+} app_state_t;
+
+
+
+
+
+
+typedef struct {
+    int track_number; 
+} dfplayer_command_t;
+
 #endif // _CONFIG_H_
